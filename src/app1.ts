@@ -66,9 +66,9 @@ const sendEmail = async () => {
             ToAddresses: [ "" ] 
         },
         Message: {
-            Subject: { Data: "SES TEST yo" },
+            Subject: { Data: "" },
             Body: { 
-                Text: { Data: "<h1>TEXT Object</h1>" } 
+                Text: { Data: "" } 
             }
         }
     }

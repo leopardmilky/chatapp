@@ -1,14 +1,11 @@
-import { SESClient, SendEmailCommand} from '@aws-sdk/client-ses'
+import { SESClient, SendEmailCommand, SendEmailCommandInput} from '@aws-sdk/client-ses'
 
 
-class AwsSes {
+export default class AwsSes {
+    private sesClient: SESClient;
 
     constructor() {
-        this.sesClient();
-    }
-
-    private sesClient(): void {
-        new SESClient({
+        this.sesClient = new SESClient({
             credentials: {
                 accessKeyId: process.env.AWS_SES_ACCESS_KEY as string,
                 secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY as string
@@ -17,4 +14,21 @@ class AwsSes {
         });
     }
 
+    public async sendEmail(toAddresses: string[], subject: string, message: string) {
+        const input: SendEmailCommandInput = {
+            Source: "matthew.lee0619@gmail.com",
+            Destination: {
+                ToAddresses: toAddresses
+            },
+            Message: {
+                Subject: { Data: subject },
+                Body: { 
+                    Text: { Data: message } 
+                }
+            }
+        }
+    
+        const command = new SendEmailCommand(input);
+        await this.sesClient.send(command);
+    }
 }

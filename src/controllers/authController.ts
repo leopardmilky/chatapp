@@ -1,10 +1,12 @@
 import { RequestHandler } from 'express';
 import { AuthService } from '../services/authService';
-import { redisConnection } from '../utils/redisClient'
+import { redisConnection } from '../utils/redisClient';
+import { AwsSns } from '../utils/awsSNS';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
 const authService = new AuthService();
+const awsSns = new AwsSns();
 
 export const signin: RequestHandler = (req, res) => {
     res.render('pages/signin');
@@ -51,14 +53,14 @@ export const emailVerification: RequestHandler = async (req, res) => {
 
 export const sendPhoneCode: RequestHandler = async (req, res) => {
     const { phone } = req.body;
-
-    const randomNumber = Math.random().toString().slice(-6);
-    console.log("randomNumber: ", randomNumber);
-
     const result = await authService.isPhoneDuplicated(phone);
-    await redisConnection.set(phone, '11223333');
-    await redisConnection.expire(phone, 180);
-    req.session.phoneVerification = phone;
+    if(!result) {
+        const randomNumber = Math.random().toString().slice(-6);
+        awsSns.sendMessage(phone, randomNumber);
+        await redisConnection.set(phone, randomNumber);
+        await redisConnection.expire(phone, 180);
+        req.session.phoneVerification = phone;
+    }
     res.json(result);
 }
 
@@ -76,7 +78,6 @@ export const phoneVerification: RequestHandler = async (req, res) => {
 
 export const register: RequestHandler = async (req, res) => {
     const { newNickname, password } = req.body;
-
     const email = req.session.emailVerification;
     const phone = req.session.phoneVerification;
     delete req.session.emailVerification;
@@ -90,5 +91,4 @@ export const register: RequestHandler = async (req, res) => {
     } else {
         return res.json("server error");    // 에러핸들링 구성.
     }
-    
 }
