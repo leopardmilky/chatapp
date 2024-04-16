@@ -1,0 +1,19 @@
+<%- include('../../layouts/header') %>
+</head>
+<body>
+
+<div>
+    <p>이메일 인증</p>
+</div>
+<div>
+    <input type="email" name="new-email" id="new-email" placeholder="이메일 입력">
+    <button id="email-code-btn">인증</button>
+</div>
+<div>
+    <input type="text" name="email-code" id="email-code" placeholder="인증코드 입력">
+    <button id="email-verification-btn">확인</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/signup/emailVerification.js"></script>
+<%- include('../../layouts/footer') %>

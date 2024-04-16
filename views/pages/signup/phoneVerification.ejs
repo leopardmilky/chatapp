@@ -1,0 +1,21 @@
+<%- include('../../layouts/header') %>
+</head>
+<body>
+
+<div>
+    <p>휴대폰 인증</p>
+</div>
+
+<div>
+    <input type="text" id="new-phone" placeholder="휴대폰 번호 입력(숫자만 입력)">
+    <button id="phone-code-btn">인증</button>
+</div>
+
+<div>
+    <input type="text" id="phone-code" placeholder="인증코드 입력">
+    <button id="phone-verification-btn">확인</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/signup/phoneVerification.js"></script>
+<%- include('../../layouts/footer') %>

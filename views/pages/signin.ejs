@@ -1,0 +1,18 @@
+<%- include('../layouts/header') %>
+<link rel="stylesheet" href="/css/signin.css">
+</head>
+<body>
+
+
+<div class="login-box-wrap">
+    <h3>로그인</h3>
+    <input type="email" name="email" id="login-email" placeholder="이메일 또는 전화번호 입력">
+    <input type="password" name="pwd" id="login-pwd" placeholder="비밀번호 입력">
+    <button class="login-btn">SIGN IN</button>
+    <a href="">forgot ID or PASSWORD ?</a>
+    <a href="/api/auth/signup-step1">Sign Up</a>
+</div>
+
+
+<script src="/js/signin.js"></script>
+<%- include('../layouts/footer') %>
