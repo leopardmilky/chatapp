@@ -20,4 +20,8 @@ export class AuthService {
         return result;
     }
 
+    async signin(email: string): Promise<string> {
+        const result = await UserModel.signin(email);
+        return result
+    }
 }

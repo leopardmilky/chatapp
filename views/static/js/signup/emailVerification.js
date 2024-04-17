@@ -24,8 +24,8 @@ const emailVerificationBtn = document.querySelector("#email-verification-btn");
 emailVerificationBtn.addEventListener('click', emailVerification);
 
 async function emailVerification() {
-    const emailCode = document.querySelector("#email-code");
-    const data = {code: emailCode.value}
+    const emailCode = document.querySelector("#email-code").value;
+    const data = {code: emailCode}
     await axios.post('/api/auth/email-verification', data)
     .then((result) => {
         if(result.data) {

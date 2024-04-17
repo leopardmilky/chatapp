@@ -2,13 +2,14 @@ import { RequestHandler } from 'express';
 import { AuthService } from '../services/authService';
 import { redisConnection } from '../utils/redisClient';
 import { AwsSns } from '../utils/awsSNS';
+import bcrypt from 'bcrypt';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
 const authService = new AuthService();
 const awsSns = new AwsSns();
 
-export const signin: RequestHandler = (req, res) => {
+export const renderSignin: RequestHandler = (req, res) => {
     res.render('pages/signin');
 }
 
@@ -24,6 +25,17 @@ export const renderPhoneVerification: RequestHandler = (req, res) => {
 export const renderInputUserInfo: RequestHandler = (req, res) => {
     delete req.session.signupStep3;
     res.render('pages/signup/inputUserInfo');
+}
+
+export const signin: RequestHandler = async (req, res) => {
+    const { email, password } = req.body;
+    const result = await authService.signin(email);
+    if(result){
+        const matchOrNot = await bcrypt.compare(password, result);
+        return res.json(matchOrNot);
+    } else {
+        return res.json(result);
+    }
 }
 
 export const sendEmailCode: RequestHandler = async (req, res) => {
@@ -56,6 +68,7 @@ export const sendPhoneCode: RequestHandler = async (req, res) => {
     const result = await authService.isPhoneDuplicated(phone);
     if(!result) {
         const randomNumber = Math.random().toString().slice(-6);
+        console.log("randomNumber: ", randomNumber);
         awsSns.sendMessage(phone, randomNumber);
         await redisConnection.set(phone, randomNumber);
         await redisConnection.expire(phone, 180);
@@ -85,7 +98,9 @@ export const register: RequestHandler = async (req, res) => {
     if(email === undefined || phone === undefined) {
         return res.json('notok');
     }
-    const result = await authService.register(email, phone, newNickname, password);
+    const saltRounds = 10;
+    const hashingResult = await bcrypt.hash(password, saltRounds);
+    const result = await authService.register(email, phone, newNickname, hashingResult);
     if(result) {
         return res.json("ok");
     } else {

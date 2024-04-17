@@ -1,12 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { getMySQLConnection } from '../database';
 
-// export interface User {
-//     user_email: string;
-//     user_nick: string;
-//     user_phone: string;
-//     user_pwd: string;
-// }
 
 export class UserModel {
      public static async checkDuplicateEmail(email: string): Promise<boolean> {
@@ -46,5 +40,18 @@ export class UserModel {
             [email, phone, nickname, password]
         );
         return result.affectedRows > 0;
+    }
+
+    public static async signin(email: string) {
+        const mySQLConnection = getMySQLConnection()
+        if (!mySQLConnection) {
+            throw new Error('Database connection not established');
+        }
+        const [rows] = await mySQLConnection.execute<RowDataPacket[]>(
+            'SELECT user_pwd FROM users WHERE user_email = ?',
+            [email]
+        );
+        if(rows[0]) { return rows[0].user_pwd }
+        return false
     }
 }

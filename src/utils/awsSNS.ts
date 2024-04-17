@@ -19,7 +19,7 @@ export class AwsSns {
     public async sendMessage(phone: string, code: string): Promise<void> {
         const input: PublishCommandInput = { // PublishInput
             PhoneNumber: `+82${phone}`,
-            Message: `MateLink 인증코드는 ${code}`, // required
+            Message: `LeoWebPage 인증코드는 ${code}`, // required
         };
         
         const command = new PublishCommand(input);
