@@ -1,5 +1,5 @@
 import { UserModel } from '../models/user';
-
+import bcrypt from 'bcrypt';
 
 
 export class AuthService {
@@ -20,8 +20,12 @@ export class AuthService {
         return result;
     }
 
-    async signin(email: string): Promise<string> {
-        const result = await UserModel.signin(email);
-        return result
+    async signin(email: string, password: string) {
+        const passwordHash = await UserModel.signin(email);
+        if(passwordHash) {
+            const matchOrNot = await bcrypt.compare(password, passwordHash);
+            return matchOrNot
+        }
+        return passwordHash
     }
 }

@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import { AuthService } from '../services/authService';
 import { redisConnection } from '../utils/redisClient';
 import { AwsSns } from '../utils/awsSNS';
+import { generateToken } from '../utils/signJWT';
 import bcrypt from 'bcrypt';
 import { configDotenv } from 'dotenv';
 configDotenv();
@@ -29,13 +30,12 @@ export const renderInputUserInfo: RequestHandler = (req, res) => {
 
 export const signin: RequestHandler = async (req, res) => {
     const { email, password } = req.body;
-    const result = await authService.signin(email);
-    if(result){
-        const matchOrNot = await bcrypt.compare(password, result);
-        return res.json(matchOrNot);
-    } else {
-        return res.json(result);
+    const isauthenticated = await authService.signin(email, password);
+    if(isauthenticated) {
+        const token = generateToken(email);
+        console.log("token: ", token);
     }
+    return res.json(isauthenticated);
 }
 
 export const sendEmailCode: RequestHandler = async (req, res) => {
@@ -58,9 +58,8 @@ export const emailVerification: RequestHandler = async (req, res) => {
     if(value === code){
         req.session.signupStep2 = true;
         return res.json(true);
-    } else {
-        return res.json(false);
     }
+    return res.json(false);
 }
 
 export const sendPhoneCode: RequestHandler = async (req, res) => {
@@ -84,9 +83,8 @@ export const phoneVerification: RequestHandler = async (req, res) => {
     if(value === code){
         req.session.signupStep3 = true;
         return res.json(true);
-    } else {
-        return res.json(false);
     }
+    return res.json(false);
 }
 
 export const register: RequestHandler = async (req, res) => {
@@ -103,7 +101,6 @@ export const register: RequestHandler = async (req, res) => {
     const result = await authService.register(email, phone, newNickname, hashingResult);
     if(result) {
         return res.json("ok");
-    } else {
-        return res.json("server error");    // 에러핸들링 구성.
     }
+    return res.json("server error");    // 에러핸들링 구성.
 }

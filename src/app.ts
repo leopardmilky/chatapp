@@ -4,6 +4,7 @@ import session, { SessionOptions } from 'express-session';
 import path from "path";
 import express from 'express';
 import nocache from 'nocache';
+import cookieParser  from 'cookie-parser';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
@@ -31,6 +32,7 @@ class App {
         this.app.use(express.json());
         this.app.use(session(this.sessionConfig()));
         this.app.use(nocache());
+        this.app.use(cookieParser());
     }
 
     private routes(): void {

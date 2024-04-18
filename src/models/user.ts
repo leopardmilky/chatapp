@@ -29,7 +29,7 @@ export class UserModel {
         return count > 0;
     }
 
-    public static async register(email: string, phone: string, nickname: string, password: string) {
+    public static async register(email: string, phone: string, nickname: string, password: string): Promise<boolean> {
         const mySQLConnection = getMySQLConnection()
         if (!mySQLConnection) {
             throw new Error('Database connection not established');
@@ -51,7 +51,9 @@ export class UserModel {
             'SELECT user_pwd FROM users WHERE user_email = ?',
             [email]
         );
+
+        console.log("rows[0]: ", rows[0])
         if(rows[0]) { return rows[0].user_pwd }
-        return false
+        return rows[0]
     }
 }
