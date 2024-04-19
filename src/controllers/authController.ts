@@ -33,7 +33,9 @@ export const signin: RequestHandler = async (req, res) => {
     const isauthenticated = await authService.signin(email, password);
     if(isauthenticated) {
         const token = generateToken(email);
-        console.log("token: ", token);
+        console.log("Controller_token: ", token);
+        // req.cookies("iamToken", token, {httpOnly: true});
+        return token
     }
     return res.json(isauthenticated);
 }

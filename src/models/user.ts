@@ -52,7 +52,7 @@ export class UserModel {
             [email]
         );
 
-        console.log("rows[0]: ", rows[0])
+        // console.log("rows[0]: ", rows[0])
         if(rows[0]) { return rows[0].user_pwd }
         return rows[0]
     }
