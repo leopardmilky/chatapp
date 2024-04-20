@@ -34,7 +34,7 @@ export const signin: RequestHandler = async (req, res) => {
     if(isauthenticated) {
         const token = generateToken(email);
         console.log("Controller_token: ", token);
-        // req.cookies("iamToken", token, {httpOnly: true});
+        res.cookie("iamToken", "THIS_IS_COOKIE_VALUE", { httpOnly: true, maxAge: 1000 * 60 * 60 });
         return token
     }
     return res.json(isauthenticated);

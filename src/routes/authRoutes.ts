@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/signin', renderSignin);
-router.post('/signin',loginRequired, signin);
+router.post('/signin', loginRequired, signin);
 router.get('/signup-step1', renderEmailVerification);
 router.get('/signup-step2', checkSignupStep2Permission, renderPhoneVerification);
 router.get('/signup-step3', checkSignupStep3Permission, renderInputUserInfo);

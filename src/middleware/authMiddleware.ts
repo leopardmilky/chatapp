@@ -35,9 +35,6 @@ export const loginRequired: RequestHandler = (req, res, next) => {
     console.log("req.headers: ", whatisthis);
     const whatthehell = req.header;
     console.log("req.header: ", whatthehell);
-    const result1 = req.cookies;
-    console.log("req.cookies: ", result1);
-    const result2 = req.signedCookies;
-    console.log("req.signedCookies: ", result2);
+    console.log("req.cookies: ", req.cookies);
     next();
 }
