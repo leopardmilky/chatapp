@@ -2,7 +2,7 @@ import { RequestHandler } from 'express';
 import { AuthService } from '../services/authService';
 import { redisConnection } from '../utils/redisClient';
 import { AwsSns } from '../utils/awsSNS';
-import { generateToken } from '../utils/signJWT';
+import { generateJWT } from '../utils/signJWT';
 import bcrypt from 'bcrypt';
 import { configDotenv } from 'dotenv';
 configDotenv();
@@ -32,10 +32,10 @@ export const signin: RequestHandler = async (req, res) => {
     const { email, password } = req.body;
     const isauthenticated = await authService.signin(email, password);
     if(isauthenticated) {
-        const token = generateToken(email);
-        console.log("Controller_token: ", token);
-        res.cookie("iamToken", "THIS_IS_COOKIE_VALUE", { httpOnly: true, maxAge: 1000 * 60 * 60 });
-        return token
+        const jwtInfo = generateJWT(email);
+        // res.clearCookie('userToken', { httpOnly: true, maxAge: 1000 * jwtInfo.expiresIn });
+        res.cookie("userToken", jwtInfo.token, { httpOnly: true, maxAge: 1000 * jwtInfo.expiresIn });
+        return res.json(true);
     }
     return res.json(isauthenticated);
 }

@@ -26,13 +26,14 @@ class App {
 
     private config(): void {
         this.app.use(express.static(path.join(__dirname, '../views/static')));
-        this.app.set('view engine', 'ejs');
         this.app.set('views', path.join(__dirname, '../views'));
-        this.app.use(express.urlencoded({ extended: true}));
         this.app.use(express.json());
+        this.app.use(express.urlencoded({ extended: true}));
+        this.app.set('view engine', 'ejs');
         this.app.use(session(this.sessionConfig()));
-        this.app.use(nocache());
         this.app.use(cookieParser());
+        this.app.use(nocache());
+        this.app.disable('x-powered-by');
     }
 
     private routes(): void {

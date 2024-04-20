@@ -1,5 +1,7 @@
 import { RequestHandler } from 'express';
-
+import jwt from "jsonwebtoken";
+import { configDotenv } from 'dotenv';
+configDotenv();
 
 export const checkSignupStep2Permission: RequestHandler = (req, res, next) => {
     if(req.session.signupStep2) {
@@ -31,10 +33,13 @@ export const checkPasswordMatch: RequestHandler = (req, res, next) => {
 }
 
 export const loginRequired: RequestHandler = (req, res, next) => {
-    const whatisthis = req.headers;
-    console.log("req.headers: ", whatisthis);
-    const whatthehell = req.header;
-    console.log("req.header: ", whatthehell);
-    console.log("req.cookies: ", req.cookies);
+    const { userToken } = req.cookies;
+    try {
+        const result = jwt.verify(userToken, process.env.JWT_SECRET_KEY as string);
+        console.log("result: ", result);
+    } catch(error) {
+        console.log(error);
+    }
+    
     next();
 }
