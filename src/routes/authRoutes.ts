@@ -3,7 +3,7 @@ import { renderSignin, signin, renderEmailVerification, renderPhoneVerification,
     renderInputUserInfo, sendEmailCode, emailVerification,
     sendPhoneCode, phoneVerification, register } from '../controllers/authController';
 import { checkSignupStep2Permission, checkSignupStep3Permission, 
-    checkPasswordMatch, loginRequired } from '../middleware/authMiddleware';
+    checkPasswordMatch, checkAccessJWT, createRefreshJWT, isValidJWT } from '../middleware/authMiddleware';
 const router = express.Router();
 
 
@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/signin', renderSignin);
-router.post('/signin', loginRequired, signin);
+router.post('/signin', isValidJWT, signin);
 router.get('/signup-step1', renderEmailVerification);
 router.get('/signup-step2', checkSignupStep2Permission, renderPhoneVerification);
 router.get('/signup-step3', checkSignupStep3Permission, renderInputUserInfo);
