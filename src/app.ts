@@ -4,6 +4,7 @@ import session, { SessionOptions } from 'express-session';
 import path from "path";
 import express from 'express';
 import nocache from 'nocache';
+import cors from 'cors';
 import cookieParser  from 'cookie-parser';
 import { configDotenv } from 'dotenv';
 configDotenv();
@@ -31,6 +32,7 @@ class App {
         this.app.use(express.urlencoded({ extended: true}));
         this.app.set('view engine', 'ejs');
         this.app.use(session(this.sessionConfig()));
+        // this.app.use(cors({origin: true}));
         this.app.use(cookieParser());
         this.app.use(nocache());
         this.app.disable('x-powered-by');
