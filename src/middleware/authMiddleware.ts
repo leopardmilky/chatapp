@@ -68,13 +68,15 @@ export const isValidJWT: RequestHandler = (req, res, next) => {
     // 위에 두 개 합치는게 나을 듯.
     // 토큰 관리도 바꿔야 할 듯함. 엑세스 토큰은 로컬에 저장하고, 리프레시 토큰은 쿠키에 저장하는 방식으로 하는 걸로.
 
-    // const { userAccessToken } = req.cookies;
+    const { userAccessToken } = req.cookies;
+    console.log("userAccessToken: ", userAccessToken);
+    console.log("req.cookies: ", req.cookies);
     // const isValidAccessToken = jwt.verify(userAccessToken, process.env.JWT_ACCESS_SECRET_KEY as string);
     // console.log("isValidAccessToken: ", isValidAccessToken);
-    const header = req.headers;
-    const header2 = req.headers['authorization'];
-    const header3 = req.headers['Authorization'];
-    console.log("headers: ", header);
+    // const header = req.headers;
+    // const header2 = req.headers['authorization'];
+    // const header3 = req.headers['Authorization'];
+    // console.log("headers: ", header);
     // console.log("headers@@: ", header2);
     // console.log("headers@@@: ", header3);
     next();

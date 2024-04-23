@@ -35,15 +35,11 @@ export const signin: RequestHandler = async (req, res) => {
         const accessJWT = generateAccessJWT(email);
         const refreshJWT = generateRefreshJWT(email);
 
-        res.setHeader('Authorization', `Bearer ${accessJWT.token}`);
-
-        // console.log("req.headers: ", req.headers);
-        // console.log("req.headers['Authorization']: ", req.headers.Authorization);
-        
-        // res.clearCookie('userAccessToken', { httpOnly: true, maxAge: 1000 * accessJWT.expiresIn });
-        // res.clearCookie('userRefreshToken', { httpOnly: true, maxAge: 1000 * refreshJWT.expiresIn });
-        // res.cookie("userRefreshToken", refreshJWT.token, { httpOnly: true, maxAge: 1000 * refreshJWT.expiresIn });
-        // res.cookie("userAccessToken", accessJWT.token, { httpOnly: true, maxAge: 1000 * accessJWT.expiresIn });
+        await redisConnection.set(`${email}_refreshJWT`, refreshJWT.token);
+        await redisConnection.expire(`${email}_refreshJWT`, refreshJWT.expiresIn);
+        const refreshToken = await redisConnection.get(`${email}_refreshJWT`);
+        console.log("refreshToken: ", refreshToken);
+        res.cookie("userAccessToken", accessJWT.token, { httpOnly: true, maxAge: 1000 * accessJWT.expiresIn });
         return res.json(true);
     }
     return res.json(isauthenticated);
