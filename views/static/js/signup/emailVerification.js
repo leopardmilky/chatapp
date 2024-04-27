@@ -24,15 +24,19 @@ const emailVerificationBtn = document.querySelector("#email-verification-btn");
 emailVerificationBtn.addEventListener('click', emailVerification);
 
 async function emailVerification() {
+    const newEmail = document.querySelector("#new-email").value;
     const emailCode = document.querySelector("#email-code").value;
-    const data = {code: emailCode}
+    const data = {code: emailCode, inputtedEmail: newEmail}
     await axios.post('/api/auth/email-verification', data)
     .then((result) => {
         if(result.data) {
-            window.location = '/api/auth/signup-step2'
+            window.location = '/api/auth/signup-step2';
         }
         if(!result.data) {
             window.alert("인증 코드가 일치하지 않습니다.");
+        }
+        if(result.data === 'incorrect') {
+            window.alert("이메일 인증을 진행해주세요.");
         }
     })
 }

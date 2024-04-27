@@ -1,7 +1,9 @@
 import { SESClient, SendEmailCommand, SendEmailCommandInput} from '@aws-sdk/client-ses'
+import { configDotenv } from 'dotenv';
+configDotenv();
 
+export class AwsSes {
 
-export default class AwsSes {
     private sesClient: SESClient;
 
     constructor() {
@@ -16,7 +18,7 @@ export default class AwsSes {
 
     public async sendEmail(toAddresses: string[], subject: string, message: string) {
         const input: SendEmailCommandInput = {
-            Source: "matthew.lee0619@gmail.com",
+            Source: process.env.AWS_SES_SOURCE as string,
             Destination: {
                 ToAddresses: toAddresses
             },

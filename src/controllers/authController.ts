@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import { AuthService } from '../services/authService';
 import { redisConnection } from '../utils/redisClient';
 import { AwsSns } from '../utils/awsSNS';
+import { AwsSes } from '../utils/awsSES';
 import { generateAccessJWT, generateRefreshJWT } from '../utils/generateJWT';
 import bcrypt from 'bcrypt';
 import { configDotenv } from 'dotenv';
@@ -9,6 +10,7 @@ configDotenv();
 
 const authService = new AuthService();
 const awsSns = new AwsSns();
+const awsSes = new AwsSes();
 
 export const renderSignin: RequestHandler = (req, res) => {
     res.render('pages/signin');
@@ -37,8 +39,7 @@ export const signin: RequestHandler = async (req, res) => {
 
         await redisConnection.set(`${email}_refreshJWT`, refreshJWT.token);
         await redisConnection.expire(`${email}_refreshJWT`, refreshJWT.expiresIn);
-        const refreshToken = await redisConnection.get(`${email}_refreshJWT`);
-        console.log("refreshToken: ", refreshToken);
+        await redisConnection.get(`${email}_refreshJWT`);
         res.cookie("userAccessToken", accessJWT.token, { httpOnly: true, maxAge: 1000 * accessJWT.expiresIn });
         return res.json(true);
     }
@@ -47,14 +48,14 @@ export const signin: RequestHandler = async (req, res) => {
 
 export const sendEmailCode: RequestHandler = async (req, res) => {
     const { email } = req.body;
-    
-    const randomString = Math.random().toString(36).slice(-6);
-    console.log("randomString: ", randomString);
-
     const result = await authService.isEmailDuplicated(email);
-    await redisConnection.set(email, '11223333');
-    await redisConnection.expire(email, 180);
-    req.session.emailVerification = email;
+    if(!result) {
+        const randomString = Math.random().toString(36).slice(-6);
+        awsSes.sendEmail([email], '[LeoStudy]이메일 인증 코드입니다.', `LeoStudy 인증코드: ${randomString}`);
+        await redisConnection.set(email, randomString);
+        await redisConnection.expire(email, 180);
+        req.session.emailVerification = email;
+    }
     res.json(result);
 }
 
@@ -74,8 +75,7 @@ export const sendPhoneCode: RequestHandler = async (req, res) => {
     const result = await authService.isPhoneDuplicated(phone);
     if(!result) {
         const randomNumber = Math.random().toString().slice(-6);
-        console.log("randomNumber: ", randomNumber);
-        awsSns.sendMessage(phone, randomNumber);
+        awsSns.sendMessage(`+82${phone}`, `LeoStudy 인증코드: ${randomNumber}`);
         await redisConnection.set(phone, randomNumber);
         await redisConnection.expire(phone, 180);
         req.session.phoneVerification = phone;

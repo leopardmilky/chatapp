@@ -3,7 +3,7 @@ import { configDotenv } from 'dotenv';
 configDotenv();
 
 export class AwsSns {
-
+    
     private snsClient: SNSClient;
 
     constructor() {
@@ -18,12 +18,11 @@ export class AwsSns {
 
     public async sendMessage(phone: string, code: string): Promise<void> {
         const input: PublishCommandInput = { // PublishInput
-            PhoneNumber: `+82${phone}`,
-            Message: `LeoWebPage 인증코드는 ${code}`, // required
+            PhoneNumber: phone,
+            Message: code, // required
         };
         
         const command = new PublishCommand(input);
-        const result = await this.snsClient.send(command);
-        console.log("sendMessage_Result: ", result);
+        await this.snsClient.send(command);
     }   
 }
