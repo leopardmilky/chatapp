@@ -108,7 +108,8 @@ export const isValidInput: RequestHandler = async (req, res, next) => {
     return next();
 }
 
-export const deleteEmailVerificationSession: RequestHandler = async (req, res, next) => {
+export const deleteVerificationSession: RequestHandler = async (req, res, next) => {
     delete req.session.emailVerification;
+    delete req.session.phoneVerification;
     next();
 }

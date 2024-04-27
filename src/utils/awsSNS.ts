@@ -23,6 +23,7 @@ export class AwsSns {
         };
         
         const command = new PublishCommand(input);
-        await this.snsClient.send(command);
+        const sendMessageResult = await this.snsClient.send(command);
+        console.log("sendMessageResult: ", sendMessageResult);
     }   
 }

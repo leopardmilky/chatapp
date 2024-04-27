@@ -75,6 +75,7 @@ export const sendPhoneCode: RequestHandler = async (req, res) => {
     const result = await authService.isPhoneDuplicated(phone);
     if(!result) {
         const randomNumber = Math.random().toString().slice(-6);
+        console.log("randomNumber: ", randomNumber);
         awsSns.sendMessage(`+82${phone}`, `LeoStudy 인증코드: ${randomNumber}`);
         await redisConnection.set(phone, randomNumber);
         await redisConnection.expire(phone, 180);
