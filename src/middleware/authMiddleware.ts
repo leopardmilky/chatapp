@@ -66,8 +66,8 @@ export const createRefreshJWT: RequestHandler = (req, res, next) => {
 }
 
 export const isValidJWT: RequestHandler = (req, res, next) => {
-    // 위에 두 개 합치는게 나을 듯.
-    // 토큰 관리도 바꿔야 할 듯함. 엑세스 토큰은 로컬에 저장하고, 리프레시 토큰은 쿠키에 저장하는 방식으로 하는 걸로.
+    // 엑세스 토큰은 쿠키, 리프레시 토큰은 레디스로
+    // 페이지 접속 했을때, 로그아웃을 안해서 엑세스 토큰이 살아있는지 미들웨어에서 확인하고 리프레시 토큰 갱신하고, 바로 로그인된 페이지로 이동.
 
     const { userAccessToken } = req.cookies;
     console.log("userAccessToken: ", userAccessToken);
