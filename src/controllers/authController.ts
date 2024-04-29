@@ -31,8 +31,8 @@ export const renderInputUserInfo: RequestHandler = (req, res) => {
 }
 
 export const signin: RequestHandler = async (req, res) => {
-    const { email, password } = req.body;
-    const isauthenticated = await authService.signin(email, password);
+    const { email, pwd } = req.body;
+    const isauthenticated = await authService.signin(email, pwd);
     if(isauthenticated) {
         const accessJWT = generateAccessJWT(email);
         const refreshJWT = generateRefreshJWT(email);
@@ -41,7 +41,8 @@ export const signin: RequestHandler = async (req, res) => {
         await redisConnection.expire(`${email}_refreshJWT`, refreshJWT.expiresIn);
         await redisConnection.get(`${email}_refreshJWT`);
         res.cookie("userAccessToken", accessJWT.token, { httpOnly: true, maxAge: 1000 * accessJWT.expiresIn });
-        return res.json(true);
+        console.log("로그인 성공~~~~~~~~~~~~");
+        return res.render('pages/home');
     }
     return res.json(isauthenticated);
 }
@@ -76,7 +77,7 @@ export const sendPhoneCode: RequestHandler = async (req, res) => {
     if(!result) {
         const randomNumber = Math.random().toString().slice(-6);
         console.log("randomNumber: ", randomNumber);
-        awsSns.sendMessage(`+82${phone}`, `LeoStudy 인증코드: ${randomNumber}`);
+        // awsSns.sendMessage(`+82${phone}`, `LeoStudy 인증코드: ${randomNumber}`);
         await redisConnection.set(phone, randomNumber);
         await redisConnection.expire(phone, 180);
         req.session.phoneVerification = phone;
