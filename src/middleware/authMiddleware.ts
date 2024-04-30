@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import jwt from "jsonwebtoken";
 import { redisConnection } from '../utils/redisClient';
+import { generateAccessJWT, generateRefreshJWT } from '../utils/generateJWT';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
@@ -33,55 +34,36 @@ export const checkPasswordMatch: RequestHandler = (req, res, next) => {
     res.json('needmore');
 }
 
-export const checkAccessJWT: RequestHandler = (req, res, next) => {
-    /*
-    엑세스 토큰을 확인하고 유효하다면 패스한다.
-    엑세스 토큰을 확인하고 만료되었다면, 리프레시 토큰에서 엑세스 토큰과 리프레시 토큰을 재발급 받아야한다.
-    */
-
-    const { userAccessToken } = req.cookies;
-    try {
-        const result = jwt.verify(userAccessToken, process.env.JWT_ACCESS_SECRET_KEY as string);
-        console.log("userAccessToken_result: ", result);
-    } catch(error) {
-        console.log(error);
-    }
-    next();
-}
-
-export const createRefreshJWT: RequestHandler = (req, res, next) => {
-    /*
-    엑세스 토큰이 유효하다면 리프레시 토큰만 재발급하고,
-    엑세스 토큰이 만료되었으면 엑세스 토큰과 리프레시 토큰을 재발급한다.
-    리프레시 토큰도 만료되었다면 재로그인을 요구해야한다.
-    */
-    const { userRefreshToken } = req.cookies;
-    try {
-        const result = jwt.verify(userRefreshToken, process.env.JWT_REFRESH_SECRET_KEY as string);
-        console.log("userRefreshToken_result: ", result);
-    } catch(error) {
-        console.log(error);
-    }
-    next();
-}
-
 export const isValidJWT: RequestHandler = (req, res, next) => {
-    // 엑세스 토큰은 쿠키, 리프레시 토큰은 레디스로
-    // 페이지 접속 했을때, 로그아웃을 안해서 엑세스 토큰이 살아있는지 미들웨어에서 확인하고 리프레시 토큰 갱신하고, 바로 로그인된 페이지로 이동.
-
     const { userAccessToken } = req.cookies;
-    console.log("userAccessToken: ", userAccessToken);
-    console.log("req.cookies: ", req.cookies);
-    // const isValidAccessToken = jwt.verify(userAccessToken, process.env.JWT_ACCESS_SECRET_KEY as string);
-    // console.log("isValidAccessToken: ", isValidAccessToken);
-    // const header = req.headers;
-    // const header2 = req.headers['authorization'];
-    // const header3 = req.headers['Authorization'];
-    // console.log("headers: ", header);
-    // console.log("headers@@: ", header2);
-    // console.log("headers@@@: ", header3);
-    next();
+    jwt.verify(userAccessToken, process.env.JWT_ACCESS_SECRET_KEY as string, async(err: any, decoded: any) => {
+        if(err?.name === 'TokenExpiredError') {
+            const refreshToken = await redisConnection.get(userAccessToken) as string;
+            jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY as string, async(err: any, decoded: any) => {
+                if(err) { 
+                    return next(); 
+                }
+                if(decoded) {
+                    const decodedRefreshToken = jwt.decode(refreshToken) as { username: string };
+                    const accessJWT = generateAccessJWT(decodedRefreshToken.username);
+                    const refreshJWT = generateRefreshJWT(decodedRefreshToken.username);
+                    await redisConnection.del(userAccessToken);
+                    res.clearCookie("userAccessToken", { httpOnly: true });
+                    await redisConnection.set(accessJWT.token, refreshJWT.token);
+                    await redisConnection.expire(accessJWT.token, refreshJWT.expiresIn);
+                    res.cookie("userAccessToken", accessJWT.token, { httpOnly: true });
+                    return res.render('pages/home');
+                }
+            });
+        }
+        if(err?.name === 'JsonWebTokenError') {
+            return next();
+        }
 
+        if(decoded) { 
+            return res.render('pages/home');
+        }
+    });
 }
 
 export const isValidEmail: RequestHandler = (req, res, next) => {

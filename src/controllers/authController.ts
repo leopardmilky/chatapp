@@ -5,6 +5,7 @@ import { AwsSns } from '../utils/awsSNS';
 import { AwsSes } from '../utils/awsSES';
 import { generateAccessJWT, generateRefreshJWT } from '../utils/generateJWT';
 import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
@@ -32,19 +33,18 @@ export const renderInputUserInfo: RequestHandler = (req, res) => {
 
 export const signin: RequestHandler = async (req, res) => {
     const { email, pwd } = req.body;
-    const isauthenticated = await authService.signin(email, pwd);
-    if(isauthenticated) {
-        const accessJWT = generateAccessJWT(email);
-        const refreshJWT = generateRefreshJWT(email);
+    const uuidExists = await authService.signin(email, pwd);
+    if(uuidExists) {
+        const accessJWT = generateAccessJWT(uuidExists);
+        const refreshJWT = generateRefreshJWT(uuidExists);
 
-        await redisConnection.set(`${email}_refreshJWT`, refreshJWT.token);
-        await redisConnection.expire(`${email}_refreshJWT`, refreshJWT.expiresIn);
-        await redisConnection.get(`${email}_refreshJWT`);
-        res.cookie("userAccessToken", accessJWT.token, { httpOnly: true, maxAge: 1000 * accessJWT.expiresIn });
+        await redisConnection.set(accessJWT.token, refreshJWT.token);
+        await redisConnection.expire(accessJWT.token, refreshJWT.expiresIn);
+        res.cookie("userAccessToken", accessJWT.token, { httpOnly: true });
         console.log("로그인 성공~~~~~~~~~~~~");
         return res.render('pages/home');
     }
-    return res.json(isauthenticated);
+    return res.json(uuidExists);
 }
 
 export const sendEmailCode: RequestHandler = async (req, res) => {
@@ -107,7 +107,9 @@ export const register: RequestHandler = async (req, res) => {
     }
     const saltRounds = 10;
     const hashingResult = await bcrypt.hash(password, saltRounds);
-    const result = await authService.register(email, phone, newNickname, hashingResult);
+    const uuid = uuidv4();
+    console.log("userUUID: ", uuid);
+    const result = await authService.register(email, phone, newNickname, hashingResult, uuid);
     if(result) {
         return res.json("ok");
     }

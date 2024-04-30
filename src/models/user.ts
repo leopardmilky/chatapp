@@ -29,15 +29,15 @@ export class UserModel {
         return count > 0;
     }
 
-    public static async register(email: string, phone: string, nickname: string, password: string): Promise<boolean> {
+    public static async register(email: string, phone: string, nickname: string, password: string, uuid: string): Promise<boolean> {
         const mySQLConnection = getMySQLConnection()
         if (!mySQLConnection) {
             throw new Error('Database connection not established');
         }
         const [result] = await mySQLConnection.execute<ResultSetHeader>(
-            `INSERT INTO users (user_email, user_phone, user_nick, user_pwd)
-             VALUES (?,?,?,?)`,
-            [email, phone, nickname, password]
+            `INSERT INTO users (user_email, user_phone, user_nick, user_pwd, user_uid)
+             VALUES (?,?,?,?,?)`,
+            [email, phone, nickname, password, uuid]
         );
         return result.affectedRows > 0;
     }
@@ -48,12 +48,11 @@ export class UserModel {
             throw new Error('Database connection not established');
         }
         const [rows] = await mySQLConnection.execute<RowDataPacket[]>(
-            'SELECT user_pwd FROM users WHERE user_email = ?',
+            'SELECT user_pwd, user_uid FROM users WHERE user_email = ?',
             [email]
         );
 
-        // console.log("rows[0]: ", rows[0])
-        if(rows[0]) { return rows[0].user_pwd }
+        if(rows[0]) { return rows[0] }
         return rows[0]
     }
 }
