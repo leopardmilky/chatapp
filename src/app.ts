@@ -1,6 +1,7 @@
 import authRoutes from './routes/authRoutes';
 import { connectMySQL } from './database';
 import session, { SessionOptions } from 'express-session';
+import { isValidJWT, clearJWT } from './middleware/authMiddleware';
 import path from "path";
 import express from 'express';
 import nocache from 'nocache';
@@ -16,9 +17,10 @@ class App {
     constructor() {
         this.app = express();
         this.config();
-        this.listen();
+        this.commonMiddleware();
         this.routes();
         this.connectDatabases();
+        this.listen();
     }
 
     private listen(): void {
@@ -36,6 +38,21 @@ class App {
         this.app.use(cookieParser());
         this.app.use(nocache());
         this.app.disable('x-powered-by');
+    }
+
+    private commonMiddleware(): void {
+        this.app.use((req, res, next) => {
+            console.log("req.headers: ", req.headers);
+            if(req.path.startsWith('/api/auth/')) return next();
+            isValidJWT(req, res, next);
+            
+        });
+        
+        this.app.use((req, res, next) => {
+            console.log("req.headers: ", req.headers);
+            if(req.path.startsWith('/api/auth/')) return clearJWT(req, res, next);
+            next();
+        });
     }
 
     private routes(): void {

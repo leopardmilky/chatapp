@@ -34,14 +34,29 @@ export const checkPasswordMatch: RequestHandler = (req, res, next) => {
     res.json('needmore');
 }
 
+export const clearJWT: RequestHandler = async(req, res, next) => {
+    const { userAccessToken } = req.cookies;
+    if(userAccessToken) {
+        res.clearCookie("userAccessToken", { httpOnly: true });
+        await redisConnection.del(userAccessToken);
+        console.log("clearJWT_______working.....");
+        return next();
+    }
+    console.log("clearJWT_______userAccessToken없음.....");
+    next();
+}
+
 export const isValidJWT: RequestHandler = (req, res, next) => {
+    console.log("isValidJWT_____req.path: ", req.path);
+
     const { userAccessToken } = req.cookies;
     jwt.verify(userAccessToken, process.env.JWT_ACCESS_SECRET_KEY as string, async(err: any, decoded: any) => {
         if(err?.name === 'TokenExpiredError') {
             const refreshToken = await redisConnection.get(userAccessToken) as string;
             jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY as string, async(err: any, decoded: any) => {
                 if(err) { 
-                    return next(); 
+                    console.log("refreshToken die");
+                    return res.render('pages/signin'); 
                 }
                 if(decoded) {
                     const decodedRefreshToken = jwt.decode(refreshToken) as { username: string };
@@ -52,16 +67,19 @@ export const isValidJWT: RequestHandler = (req, res, next) => {
                     await redisConnection.set(accessJWT.token, refreshJWT.token);
                     await redisConnection.expire(accessJWT.token, refreshJWT.expiresIn);
                     res.cookie("userAccessToken", accessJWT.token, { httpOnly: true });
-                    return res.render('pages/home');
+                    console.log("refreshToken alive");
+                    return next();
                 }
             });
         }
         if(err?.name === 'JsonWebTokenError') {
-            return next();
+            console.log("accessToken error");
+            return res.render('pages/signin'); 
         }
 
         if(decoded) { 
-            return res.render('pages/home');
+            console.log("accessToken alive");
+            return next();
         }
     });
 }
