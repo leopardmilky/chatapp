@@ -42,14 +42,11 @@ class App {
 
     private commonMiddleware(): void {
         this.app.use((req, res, next) => {
-            console.log("req.headers: ", req.headers);
             if(req.path.startsWith('/api/auth/')) return next();
             isValidJWT(req, res, next);
-            
         });
         
         this.app.use((req, res, next) => {
-            console.log("req.headers: ", req.headers);
             if(req.path.startsWith('/api/auth/')) return clearJWT(req, res, next);
             next();
         });
@@ -65,7 +62,7 @@ class App {
 
     private sessionConfig() {
         const sessionConfig: SessionOptions = {
-            secret: 'iamsecretsession',
+            secret: process.env.SESSION_SECRET as string,
             resave: false,
             saveUninitialized: false,
             cookie: {

@@ -26,6 +26,7 @@
     "mysql2": "^3.9.4",
     "nocache": "^4.0.0",
     "redis": "^4.6.13",
+    "socket.io": "^4.7.5",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

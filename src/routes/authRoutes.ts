@@ -3,7 +3,7 @@ import { renderSignin, signin, renderEmailVerification, renderPhoneVerification,
     renderInputUserInfo, sendEmailCode, emailVerification,
     sendPhoneCode, phoneVerification, register } from '../controllers/authController';
 import { checkSignupStep2Permission, checkSignupStep3Permission, 
-    checkPasswordMatch, isValidJWT, isValidEmail, isValidInput, 
+    checkPasswordMatch, isValidJWT, isValidEmail, isValidInput, clearJWT, 
     deleteVerificationSession } from '../middleware/authMiddleware';
 const router = express.Router();
 
@@ -17,6 +17,6 @@ router.post('/email-verification', isValidInput, emailVerification);
 router.post('/send-phone-code', sendPhoneCode);
 router.post('/phone-verification', phoneVerification);
 router.post('/register', checkPasswordMatch, register);
-router.post('/signout', renderSignin);
+router.post('/signout', clearJWT, renderSignin);
 
 export default router;

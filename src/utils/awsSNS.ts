@@ -21,9 +21,7 @@ export class AwsSns {
             PhoneNumber: phone,
             Message: code, // required
         };
-        
         const command = new PublishCommand(input);
-        const sendMessageResult = await this.snsClient.send(command);
-        console.log("sendMessageResult: ", sendMessageResult);
+        await this.snsClient.send(command);
     }   
 }

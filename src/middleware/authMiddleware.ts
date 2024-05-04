@@ -47,8 +47,6 @@ export const clearJWT: RequestHandler = async(req, res, next) => {
 }
 
 export const isValidJWT: RequestHandler = (req, res, next) => {
-    console.log("isValidJWT_____req.path: ", req.path);
-
     const { userAccessToken } = req.cookies;
     jwt.verify(userAccessToken, process.env.JWT_ACCESS_SECRET_KEY as string, async(err: any, decoded: any) => {
         if(err?.name === 'TokenExpiredError') {

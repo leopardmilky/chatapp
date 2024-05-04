@@ -29,7 +29,6 @@ export class AwsSes {
                 }
             }
         }
-    
         const command = new SendEmailCommand(input);
         await this.sesClient.send(command);
     }
