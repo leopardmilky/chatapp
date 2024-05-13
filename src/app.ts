@@ -7,15 +7,21 @@ import express from 'express';
 import nocache from 'nocache';
 import cors from 'cors';
 import cookieParser  from 'cookie-parser';
+import http from 'http';
+import socketio from 'socket.io';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
 
 class App {
-    public app: express.Application
+    public app: express.Application;
+    private server: http.Server;
+    // private io: socketio.Server;
 
     constructor() {
         this.app = express();
+        this.server = http.createServer(this.app);
+        // this.io = new socketio.Server();
         this.config();
         this.commonMiddleware();
         this.routes();
@@ -24,7 +30,8 @@ class App {
     }
 
     private listen(): void {
-        this.app.listen(process.env.EXPRESS_PORT, () => console.log(`connected PORT ${process.env.EXPRESS_PORT} ~ ♡`))
+        // this.app.listen(process.env.EXPRESS_PORT, () => console.log(`connected PORT ${process.env.EXPRESS_PORT} ~ ♡`));
+        this.server.listen(process.env.EXPRESS_PORT, () => console.log(`connected PORT ${process.env.EXPRESS_PORT} ~ ♡`));
     }
 
     private config(): void {
