@@ -1,4 +1,5 @@
 import authRoutes from './routes/authRoutes';
+import chatRoutes from './routes/chatRoutes';
 import { connectMySQL } from './database';
 import session, { SessionOptions } from 'express-session';
 import { isValidJWT, clearJWT } from './middleware/authMiddleware';
@@ -13,19 +14,20 @@ import { configDotenv } from 'dotenv';
 configDotenv();
 
 
-class App {
+export class App {
     public app: express.Application;
     private server: http.Server;
-    // private io: socketio.Server;
+    private io: socketio.Server;
 
     constructor() {
         this.app = express();
         this.server = http.createServer(this.app);
-        // this.io = new socketio.Server();
+        this.io = new socketio.Server(this.server);
         this.config();
         this.commonMiddleware();
         this.routes();
         this.connectDatabases();
+        this.handleSocketConnections()
         this.listen();
     }
 
@@ -61,6 +63,7 @@ class App {
 
     private routes(): void {
         this.app.use('/api/auth', authRoutes);
+        this.app.use('/api/chat', chatRoutes);
     }
 
     private connectDatabases(): void {
@@ -79,6 +82,21 @@ class App {
         }
         return sessionConfig;
     }
+
+    handleSocketConnections(): void {
+        this.io.on('connection', (socket: socketio.Socket) => {
+            console.log('socketio에 연결되었습니다.');
+
+            socket.on('disconnect', () => {
+                console.log('socketio와 연결해제 되었습니다.');
+            });
+
+            socket.on('chat message', (msg: string) => {
+                console.log(`메세지: ${msg}`);
+                this.io.emit('chat message', msg);  // 모든 클라이언트에세 메세지 전달.
+            });
+        });
+    };
 }
 
 export default new App().app;

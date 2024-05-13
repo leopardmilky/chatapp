@@ -14,8 +14,8 @@ const awsSns = new AwsSns();
 const awsSes = new AwsSes();
 
 export const renderSignin: RequestHandler = (req, res) => {
-    console.log("req.headers: ", req.headers);
-    console.log("req.cookies: ", req.cookies);
+    // console.log("req.headers: ", req.headers);
+    // console.log("req.cookies: ", req.cookies);
     res.render('pages/signin');
 }
 
@@ -44,7 +44,8 @@ export const signin: RequestHandler = async (req, res) => {
         await redisConnection.expire(accessJWT.token, refreshJWT.expiresIn);
         res.cookie("userAccessToken", accessJWT.token, { httpOnly: true });
         console.log("로그인 성공~~~~~~~~~~~~");
-        return res.render('pages/home');
+        // return res.render('pages/home');
+        return res.redirect('/api/chat');
     }
     return res.json(uuidExists);
 }
